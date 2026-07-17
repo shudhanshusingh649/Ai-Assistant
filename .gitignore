@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+.env
+
+voice.mp3
+voice.wav
+output_0.wav
+
+*.pyc
+*.pyo
+*.pyd
+
+.cache/

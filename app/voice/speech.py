@@ -69,4 +69,4 @@ def speak(text):
         except:
             pass
 
-        manager.is_speaking = False
+        manager.is_speaking = False   
