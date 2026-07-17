@@ -1,34 +1,48 @@
-import os
-from app.voice.speech_edge import speak
+import subprocess
+
+from app.voice.speech import speak
+from app.automation.registry import APPS
 
 
 def system_commands(command):
 
     command = command.lower()
 
-    if "chrome" in command:
-        speak("Opening Chrome")
-        os.system("start chrome")
+    # -------------------------
+    # OPEN APPS
+    # -------------------------
+    for app, actions in APPS.items():
 
-    elif "notepad" in command:
-        speak("Opening Notepad")
-        os.system("start notepad")
+        if app in command:
 
-    elif "calculator" in command:
-        speak("Opening Calculator")
-        os.system("start calc")
+            if any(word in command for word in [
+                "open",
+                "start",
+                "launch"
+            ]):
 
-    elif "paint" in command:
-        speak("Opening Paint")
-        os.system("start mspaint")
+                speak(f"Opening {app.title()}.")
 
-    elif "cmd" in command:
-        speak("Opening Command Prompt")
-        os.system("start cmd")
+                subprocess.Popen(
+                    actions["open"],
+                    shell=True
+                )
 
-    elif "explorer" in command or "file explorer" in command:
-        speak("Opening File Explorer")
-        os.system("start explorer")
+                return True
 
-    else:
-        speak("Application not found.")
+            if any(word in command for word in [
+                "close",
+                "exit",
+                "stop"
+            ]):
+
+                speak(f"Closing {app.title()}.")
+
+                subprocess.run(
+                    actions["close"] + " >nul 2>&1",
+                    shell=True
+                )
+
+                return True
+
+    return False

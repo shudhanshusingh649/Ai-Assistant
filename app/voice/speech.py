@@ -1,7 +1,9 @@
+import os
+import uuid
+
 from kokoro import KPipeline
 import soundfile as sf
 import pygame
-import os
 
 from app.voice import manager
 
@@ -9,7 +11,10 @@ from app.voice import manager
 pygame.mixer.init()
 
 # Load Kokoro pipeline
-pipeline = KPipeline(lang_code="a")
+pipeline = KPipeline(
+    repo_id="hexgrad/Kokoro-82M",
+    lang_code="a"
+)
 
 # Female Voice
 VOICE = "af_heart"
@@ -19,7 +24,7 @@ def speak(text):
 
     print(f"NEXA : {text}")
 
-    # Empty text check
+    # Ignore empty text
     if not text.strip():
         return
 
@@ -27,25 +32,28 @@ def speak(text):
     manager.stop_requested = False
     manager.current_answer = text
 
+    # Unique filename every time
+    filename = f"{uuid.uuid4()}.wav"
+
     try:
+
         # Generate speech
         generator = pipeline(
             text=text,
             voice=VOICE
         )
 
-        # Save generated audio
+        # Save audio
         for _, _, audio in generator:
-            sf.write("voice.wav", audio, 24000)
+            sf.write(filename, audio, 24000)
 
         # Play audio
-        pygame.mixer.music.load("voice.wav")
+        pygame.mixer.music.load(filename)
         pygame.mixer.music.play()
 
         # Wait until speaking finishes
         while pygame.mixer.music.get_busy():
 
-            # Stop command
             if manager.stop_requested:
                 pygame.mixer.music.stop()
                 break
@@ -53,20 +61,25 @@ def speak(text):
             pygame.time.Clock().tick(20)
 
     except Exception as e:
-        print("❌ Kokoro Error :", e)
+
+        print("❌ Kokoro Error:", e)
 
     finally:
 
         try:
             pygame.mixer.music.stop()
+        except:
+            pass
+
+        try:
             pygame.mixer.music.unload()
         except:
             pass
 
         try:
-            if os.path.exists("voice.wav"):
-                os.remove("voice.wav")
+            if os.path.exists(filename):
+                os.remove(filename)
         except:
             pass
 
-        manager.is_speaking = False   
+        manager.is_speaking = False

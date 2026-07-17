@@ -1,11 +1,18 @@
 from app.voice.speech import speak
 from app.brain.ollama_ai import ask_ai
 from app.memory.memory import remember, recall
+from app.automation.system import system_commands
 
 
 def process_command(command):
 
     command = command.lower().strip()
+
+    # -----------------------------
+    # System Commands
+    # -----------------------------
+    if system_commands(command):
+        return
 
     # -----------------------------
     # Remember command
